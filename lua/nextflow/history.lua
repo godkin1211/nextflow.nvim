@@ -53,8 +53,9 @@ end
 
 ---Original command with any `-resume [id]` removed, plus `-resume <session_id>`.
 ---@param entry NextflowHistoryEntry
+---@param nf? string configured nextflow command; replaces a leading `nextflow`
 ---@return string
-function M.resume_command(entry)
+function M.resume_command(entry, nf)
   local toks = vim.split(entry.command, "%s+", { trimempty = true })
   local out, i = {}, 1
   while i <= #toks do
@@ -67,6 +68,9 @@ function M.resume_command(entry)
       out[#out + 1] = t
       i = i + 1
     end
+  end
+  if nf and out[1] == "nextflow" then
+    out[1] = nf
   end
   return table.concat(out, " ") .. " -resume " .. entry.session_id
 end
@@ -87,7 +91,7 @@ function M.pick_resume(buf)
     if not e then
       return
     end
-    vim.ui.input({ prompt = "Command: ", default = M.resume_command(e) }, function(cmd)
+    vim.ui.input({ prompt = "Command: ", default = M.resume_command(e, require("nextflow.run").nextflow_cmd()) }, function(cmd)
       if cmd and cmd ~= "" then
         terminal.open(cmd, dir)
       end

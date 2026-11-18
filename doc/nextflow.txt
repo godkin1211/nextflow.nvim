@@ -133,6 +133,8 @@ Defaults: >lua
     }
 <
 Commands may start with `~`, e.g. `nf_core = { cmd = "~/venv/bin/nf-core" }`.
+A string is split on spaces; for a path containing spaces use a list:
+`nextflow = { cmd = { "~/My Tools/nextflow" } }`.
 
 ==============================================================================
 7. HEALTH                                                    *nextflow-health*

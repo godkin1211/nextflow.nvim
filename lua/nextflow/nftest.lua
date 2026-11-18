@@ -42,7 +42,7 @@ function M.enclosing_test(lines, row)
       -- find the end of the block by counting braces from the test( line
       local depth, opened, finish = 0, false, #lines
       for i = start, #lines do
-        local l = lines[i]:gsub('"[^"]*"', ""):gsub("'[^']*'", "")
+        local l = lines[i]:gsub('"[^"]*"', ""):gsub("'[^']*'", ""):gsub("//.*$", "")
         for ch in l:gmatch("[{}]") do
           depth = depth + (ch == "{" and 1 or -1)
           opened = opened or ch == "{"

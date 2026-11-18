@@ -8,8 +8,10 @@ local M = {}
 ---@type {cmd: string, cwd: string}|nil
 M.last = nil
 
-local function nextflow()
-  return table.concat(util.expand_cmd(config.get().nextflow.cmd), " ")
+---The configured nextflow command, ready for a shell.
+---@return string
+function M.nextflow_cmd()
+  return util.shell_join(util.expand_cmd(config.get().nextflow.cmd))
 end
 
 ---@param nf string
@@ -27,7 +29,7 @@ function M.run(buf)
       return
     end
     M.args = args
-    M.last = { cmd = M.command(nextflow(), args), cwd = root }
+    M.last = { cmd = M.command(M.nextflow_cmd(), args), cwd = root }
     terminal.open(M.last.cmd, root)
   end)
 end

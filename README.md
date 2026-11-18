@@ -44,7 +44,8 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
 { "nvim-treesitter/nvim-treesitter", opts = { ensure_installed = { "groovy" } } },
 ```
 
-Filetype detection lives in `ftdetect/`, so it keeps working while the plugin is lazy-loaded.
+Filetype detection lives in `ftdetect/`, so it keeps working while the plugin is lazy-loaded;
+opening a `params*.yml|json` file first also works (the plugin loads when yamlls/jsonls attaches).
 Without lazy.nvim, call `require("nextflow").setup({})`.
 
 ## Commands
@@ -118,6 +119,9 @@ require("nextflow").setup({
   dag = { open_preview = true },          -- run :MarkdownPreview on DAG files
 })
 ```
+
+A `cmd` string is split on spaces; for a path containing spaces use a list,
+e.g. `nextflow = { cmd = { "~/My Tools/nextflow" } }`.
 
 ## Health
 

@@ -27,7 +27,7 @@ M.register("dag", { run = function() vim.lsp.codelens.run() end })
 M.register("log", {
   run = function()
     local dir = util.launch_dir(buf()) or util.root(buf())
-    local nf = table.concat(util.expand_cmd(require("nextflow.config").get().nextflow.cmd), " ")
+    local nf = require("nextflow.run").nextflow_cmd()
     require("nextflow.terminal").open(nf .. " log", dir)
   end,
 })

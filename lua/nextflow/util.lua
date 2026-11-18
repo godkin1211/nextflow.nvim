@@ -51,6 +51,15 @@ function M.expand_cmd(cmd)
   return parts
 end
 
+---Join a command for a shell, quoting only the parts that need it.
+---@param parts string[]
+---@return string
+function M.shell_join(parts)
+  return table.concat(vim.tbl_map(function(p)
+    return p:match("^[%w%._/%-=:,+@%%]+$") and p or vim.fn.shellescape(p)
+  end, parts), " ")
+end
+
 ---Run a CLI asynchronously; `on_done` runs on the main loop.
 ---A missing executable gives one notification and no callback.
 ---@param cmd string[]
