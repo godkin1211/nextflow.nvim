@@ -209,7 +209,14 @@ function M.attach(client, buf)
   if client.name == "yamlls" then
     client.settings.yaml = client.settings.yaml or {}
     client.settings.yaml.schemas = client.settings.yaml.schemas or {}
-    client.settings.yaml.schemas[uri] = path
+    local schemas = client.settings.yaml.schemas
+    local files = schemas[uri]
+    files = type(files) == "table" and files or (files and { files } or {})
+    if vim.tbl_contains(files, path) then
+      return
+    end
+    table.insert(files, path)
+    schemas[uri] = files
   else
     client.settings.json = client.settings.json or {}
     client.settings.json.schemas = client.settings.json.schemas or {}

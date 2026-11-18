@@ -48,6 +48,13 @@ function M.dag_markdown(name, mermaid)
   return lines
 end
 
+---Where the DAG markdown for workflow `name` is written (overwritten on each preview).
+---@param name string|nil
+---@return string
+function M.dag_file(name)
+  return ("%s/nextflow.nvim/dag/%s_dag.md"):format(vim.fn.stdpath("cache"), (name or "entry"):gsub("[^%w_]", "_"))
+end
+
 local function exec_server(client, command, args, cb)
   client:request("workspace/executeCommand", { command = command, arguments = args }, function(err, res)
     if err or not res or not res.result then
@@ -67,7 +74,8 @@ M.commands = {
       name = nil
     end
     exec_server(client, "nextflow.server.previewDag", { uri, name or vim.NIL }, function(mermaid)
-      local file = vim.fn.tempname() .. "_" .. (name or "entry"):gsub("[^%w_]", "_") .. "_dag.md"
+      local file = M.dag_file(name)
+      vim.fn.mkdir(vim.fs.dirname(file), "p")
       vim.fn.writefile(M.dag_markdown(name, mermaid), file)
       vim.cmd("vsplit " .. vim.fn.fnameescape(file))
       if config.get().dag.open_preview and vim.fn.exists(":MarkdownPreview") == 2 then

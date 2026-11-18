@@ -99,6 +99,31 @@ function M.failed_file(workdir)
   return nil
 end
 
+---The failed task to show: the last FAILED task whose name never succeeded later
+---(retried attempts that then COMPLETED/CACHED are skipped), else the last FAILED one.
+---@param list NextflowTask[]
+---@return NextflowTask|nil
+function M.failed_task(list)
+  local last
+  for i = #list, 1, -1 do
+    local t = list[i]
+    if t.status == "FAILED" then
+      last = last or t
+      local retried = false
+      for j = i + 1, #list do
+        if list[j].name == t.name and (list[j].status == "COMPLETED" or list[j].status == "CACHED") then
+          retried = true
+          break
+        end
+      end
+      if not retried then
+        return t
+      end
+    end
+  end
+  return last
+end
+
 ---Load the task list of `run_name` (default: newest run) and call `cb(run_name, tasks)`.
 local function load(buf, run_name, cb)
   local dir = util.launch_dir(buf)
@@ -154,17 +179,16 @@ end
 ---@param buf integer
 function M.open_failed(buf)
   load(buf, nil, function(run, list)
-    for _, t in ipairs(list) do
-      if t.status == "FAILED" then
-        local file = M.failed_file(t.workdir)
-        if not file then
-          return util.notify(("%s failed, but %s has no .command.err/.command.log"):format(t.name, t.workdir), vim.log.levels.WARN)
-        end
-        util.notify(("%s failed (exit %s)"):format(t.name, t.exit), vim.log.levels.WARN)
-        return open(file)
-      end
+    local t = M.failed_task(list)
+    if not t then
+      return util.notify("No failed tasks in " .. run)
     end
-    util.notify("No failed tasks in " .. run)
+    local file = M.failed_file(t.workdir)
+    if not file then
+      return util.notify(("%s failed, but %s has no .command.err/.command.log"):format(t.name, t.workdir), vim.log.levels.WARN)
+    end
+    util.notify(("%s failed (exit %s)"):format(t.name, t.exit), vim.log.levels.WARN)
+    open(file)
   end)
 end
 

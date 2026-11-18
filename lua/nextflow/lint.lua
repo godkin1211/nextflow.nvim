@@ -27,6 +27,16 @@ function M.parse(json_text, root)
   return items, data.summary or {}
 end
 
+---@param res vim.SystemCompleted
+---@return string
+function M.failure_message(res)
+  local detail = vim.trim(res.stderr or "")
+  if detail == "" then
+    detail = vim.trim(res.stdout or "")
+  end
+  return ("nextflow lint failed (exit %s)%s"):format(tostring(res.code), detail ~= "" and (":\n" .. detail) or "")
+end
+
 function M.lint(buf)
   local root = util.root(buf)
   util.notify("nextflow lint …")
@@ -34,7 +44,7 @@ function M.lint(buf)
   util.run_async(cmd, { cwd = root }, function(res)
     local items, summary = M.parse(res.stdout or "", root)
     if not items then
-      return util.notify("nextflow lint failed:\n" .. (res.stderr or ""), vim.log.levels.ERROR)
+      return util.notify(M.failure_message(res), vim.log.levels.ERROR)
     end
     vim.fn.setqflist({}, " ", { title = "nextflow lint", items = items })
     util.notify(

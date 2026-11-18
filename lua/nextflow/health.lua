@@ -93,9 +93,16 @@ local function check_tools()
   end
 end
 
+---@param lang string
+---@return boolean
+function M.parser_installed(lang)
+  local ok, loaded = pcall(vim.treesitter.language.add, lang)
+  return ok and loaded == true
+end
+
 local function check_extras()
   h.start("Optional")
-  if pcall(vim.treesitter.language.add, "groovy") then
+  if M.parser_installed("groovy") then
     h.ok("groovy treesitter parser (used for nextflow highlighting)")
   else
     h.warn("groovy treesitter parser not installed", { ":TSInstall groovy" })

@@ -1,13 +1,11 @@
 ---@mod nextflow.filetype Filetype detection (independent of setup/lazy-loading)
 local M = {}
 
-local done = false
-
 function M.setup()
-  if done then
+  if vim.g.nextflow_filetypes_added then
     return
   end
-  done = true
+  vim.g.nextflow_filetypes_added = true
   vim.filetype.add({
     extension = { nf = "nextflow" },
     filename = {
@@ -15,6 +13,7 @@ function M.setup()
       ["nf-test.config"] = "groovy",
     },
     pattern = {
+      -- (vim.filetype anchors user patterns as ^...$ itself; do not add $)
       -- nf-test specs are a Groovy DSL, not Nextflow scripts
       [".*%.nf%.test"] = "groovy",
       -- any *.config inside a Nextflow project (conf/base.config, conf/modules.config, …)
