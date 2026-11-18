@@ -152,7 +152,7 @@ uv pip install --python ~/venv/bin/python nf-metro "drawsvg<2.5"
 opts = { dag = { metro = { cmd = "~/venv/bin/nf-metro", theme = "nfcore" } } }
 ```
 
-Themes: `nfcore`, `seqera`, `light` (and their `-light` / `-dark` variants); `format = "svg"`
+Themes: `nfcore`, `seqera` (each also `-light` / `-dark`) and `light`; `format = "svg"`
 writes an SVG instead of HTML. When nf-metro is missing or fails (for example a workflow without
 processes), the DAG is shown as Mermaid instead; `:Nextflow dag mermaid` does that on purpose, and
 `dag = { renderer = "mermaid" }` makes it permanent. `:checkhealth nextflow` tells which one you get.
