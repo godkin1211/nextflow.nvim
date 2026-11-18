@@ -1,0 +1,6 @@
+
+INFO     Repository type: pipeline                                              
+[
+    "fastqc",
+    "multiqc"
+]

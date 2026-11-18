@@ -56,6 +56,10 @@ end
 function M.dispatch(fargs, bang)
   load_features()
   local name = fargs[1]
+  -- `:Nextflow modules!` — Vim only gives the command itself a bang, so accept it on the subcommand
+  if name and not M.subcommands[name] and name:sub(-1) == "!" and M.subcommands[name:sub(1, -2)] then
+    name, bang = name:sub(1, -2), true
+  end
   local spec = name and M.subcommands[name]
   if not spec then
     local names = vim.tbl_keys(M.subcommands)

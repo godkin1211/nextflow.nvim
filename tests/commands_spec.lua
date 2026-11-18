@@ -24,6 +24,13 @@ describe("commands", function()
     assert.same({ "beta" }, commands.complete("b", "Nextflow zz_probe b"))
   end)
 
+  it("treats a trailing ! on the subcommand (`:Nextflow zz_probe!`) as bang", function()
+    local got
+    commands.register("zz_probe", { run = function(args, bang) got = { args = args, bang = bang } end })
+    commands.dispatch({ "zz_probe!", "x" }, false)
+    assert.same({ args = { "x" }, bang = true }, got)
+  end)
+
   it("notifies on unknown subcommands", function()
     local msg
     local orig = vim.notify
