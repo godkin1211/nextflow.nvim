@@ -95,6 +95,56 @@ M.commands = {
   end,
 }
 
+---Lenses to run for 0-based `row`: the innermost one whose range holds the row
+---(the server puts "Preview DAG" on a workflow's first line but spans its whole body),
+---else every lens in the buffer.
+---@param lenses lsp.CodeLens[]
+---@param row integer
+---@return lsp.CodeLens[]
+function M.lens_candidates(lenses, row)
+  local runnable = vim.tbl_filter(function(l)
+    return l.command ~= nil
+  end, lenses)
+  local inner
+  for _, l in ipairs(runnable) do
+    if l.range.start.line <= row and row <= l.range["end"].line then
+      if not inner or l.range.start.line >= inner.range.start.line then
+        inner = l
+      end
+    end
+  end
+  return inner and { inner } or runnable
+end
+
+---Run the code lens for the cursor (`:Nextflow dag`), asking when several apply.
+---@param buf integer
+function M.run_lens(buf)
+  local client = vim.lsp.get_clients({ bufnr = buf, name = "nextflow_ls" })[1]
+  if not client then
+    return util.notify("nextflow_ls is not attached to this buffer", vim.log.levels.WARN)
+  end
+  local row = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local lenses = M.lens_candidates(vim.lsp.codelens.get(buf) or {}, row)
+  local function run(l)
+    client:exec_cmd(l.command, { bufnr = buf })
+  end
+  if #lenses == 0 then
+    return util.notify("No code lens in this file (a workflow shows \"Preview DAG\")", vim.log.levels.WARN)
+  elseif #lenses == 1 then
+    return run(lenses[1])
+  end
+  vim.ui.select(lenses, {
+    prompt = "Code lens",
+    format_item = function(l)
+      return ("%s  (line %d)"):format(l.command.title, l.range.start.line + 1)
+    end,
+  }, function(l)
+    if l then
+      run(l)
+    end
+  end)
+end
+
 local warned = false
 
 function M.setup()

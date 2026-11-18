@@ -74,7 +74,9 @@ Otherwise: >lua
                               command, resume that session.
 :Nextflow lint                `nextflow lint` into the quickfix list.
 :Nextflow format              Format with the language server.
-:Nextflow dag                 Run the code lens under the cursor.
+:Nextflow dag                 Run the code lens of the workflow/process around
+                              the cursor (Preview DAG / Preview config); outside
+                              of one, pick from all lenses.
 :Nextflow log                 `nextflow log` in a terminal.
 :Nextflow tasks [{run}]       Task explorer, failed tasks first; then pick a
                               file of the task's work directory.

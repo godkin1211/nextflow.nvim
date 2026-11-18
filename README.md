@@ -60,7 +60,7 @@ Without lazy.nvim, call `require("nextflow").setup({})`.
 | `resume` | pick a run from `.nextflow/history`, resume its session |
 | `lint` | `nextflow lint` → quickfix |
 | `format` | format with the language server |
-| `dag` | run the code lens under the cursor (Preview DAG / config) |
+| `dag` | run the code lens of the workflow/process around the cursor (Preview DAG / config) |
 | `log` | `nextflow log` in a terminal |
 | `tasks [run]` | task explorer (default: newest run) |
 | `failed` | open the first failed task's `.command.err` |

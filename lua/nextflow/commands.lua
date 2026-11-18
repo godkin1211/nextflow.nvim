@@ -23,7 +23,7 @@ M.register("lint", { run = function() require("nextflow.lint").lint(buf()) end }
 M.register("format", {
   run = function() vim.lsp.buf.format({ bufnr = buf(), name = "nextflow_ls" }) end,
 })
-M.register("dag", { run = function() vim.lsp.codelens.run() end })
+M.register("dag", { run = function() require("nextflow.lsp").run_lens(buf()) end })
 M.register("log", {
   run = function()
     local dir = util.launch_dir(buf()) or util.root(buf())
