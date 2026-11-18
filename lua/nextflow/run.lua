@@ -12,6 +12,14 @@ local function nextflow()
   return table.concat(util.expand_cmd(config.get().nextflow.cmd), " ")
 end
 
+---@param nf string
+---@param args string
+---@return string
+function M.command(nf, args)
+  args = vim.trim(args)
+  return nf .. " run ." .. (args ~= "" and (" " .. args) or "")
+end
+
 function M.run(buf)
   local root = util.root(buf)
   vim.ui.input({ prompt = "nextflow run . ", default = M.args or config.get().run.default_args }, function(args)
@@ -19,7 +27,7 @@ function M.run(buf)
       return
     end
     M.args = args
-    M.last = { cmd = nextflow() .. " run . " .. args, cwd = root }
+    M.last = { cmd = M.command(nextflow(), args), cwd = root }
     terminal.open(M.last.cmd, root)
   end)
 end

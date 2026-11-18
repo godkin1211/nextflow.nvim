@@ -115,14 +115,12 @@ Defaults: >lua
         enable = true,
         cmd = nil,  -- string[]; nil = auto-detect
         settings = { nextflow = {
-          languageVersion = "26.10",
           errorReportingMode = "warnings",
           completion = { extended = true, maxItems = 100 },
           formatting = { harshilAlignment = false, maheshForm = false,
                          sortDeclarations = false },
           files = { exclude = { ".git", ".lineage", ".nextflow", ".nf-test",
                                 ".pixi", ".venv", "work" } },
-          telemetry = { enabled = false },
         } },
       },
       keymaps = { run = "<localleader>r", ... },  -- see |nextflow-keymaps|

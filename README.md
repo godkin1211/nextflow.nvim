@@ -95,12 +95,10 @@ require("nextflow").setup({
     cmd = nil, -- string[]; nil = auto-detect (PATH → ~/.nextflow/lsp native → jar → Mason)
     settings = {
       nextflow = {
-        languageVersion = "26.10",
         errorReportingMode = "warnings", -- off | errors | warnings | paranoid
         completion = { extended = true, maxItems = 100 },
         formatting = { harshilAlignment = false, maheshForm = false, sortDeclarations = false },
         files = { exclude = { ".git", ".lineage", ".nextflow", ".nf-test", ".pixi", ".venv", "work" } },
-        telemetry = { enabled = false },
       },
     },
   },

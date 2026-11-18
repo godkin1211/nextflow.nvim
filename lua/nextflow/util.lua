@@ -76,6 +76,8 @@ function M.scratch(lines, ft)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].modifiable = false
+  vim.keymap.set("n", "q", "<cmd>bwipeout<cr>", { buffer = buf, nowait = true, desc = "Close preview" })
   if ft then
     vim.bo[buf].filetype = ft
   end

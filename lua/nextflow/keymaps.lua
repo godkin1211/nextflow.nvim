@@ -25,6 +25,9 @@ local actions = {
 ---@param buf integer
 ---@return boolean
 function M.is_nextflow_buf(buf)
+  if vim.bo[buf].buftype ~= "" then
+    return false -- previews and other scratch buffers are not pipeline files
+  end
   local ft = vim.bo[buf].filetype
   return ft == "nextflow" or (ft == "groovy" and vim.api.nvim_buf_get_name(buf):match("%.nf%.test$") ~= nil)
 end
