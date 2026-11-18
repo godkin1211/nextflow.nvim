@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/example/demo/master/nextflow_schema.json",
+  "title": "demo pipeline parameters",
+  "type": "object",
+  "$defs": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "required": ["input", "outdir"],
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "pattern": "^\\S+\\.csv$",
+          "description": "Path to comma-separated file containing information about the samples.",
+          "help_text": "Use this to specify the location of your input samplesheet."
+        },
+        "outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "The output directory where the results will be saved."
+        }
+      }
+    },
+    "reference_genome_options": {
+      "title": "Reference genome options",
+      "type": "object",
+      "properties": {
+        "genome": {
+          "type": "string",
+          "description": "Name of iGenomes reference.",
+          "default": "GRCh38",
+          "enum": ["GRCh37", "GRCh38"]
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/input_output_options" },
+    { "$ref": "#/$defs/reference_genome_options" }
+  ]
+}
