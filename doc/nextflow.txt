@@ -32,8 +32,12 @@ Groovy files, where a `script:` label before a string is rare.
 Language server `nextflow_ls`: the command is found in this order:
 `nextflow-lsp` on PATH, the newest native bundle in `~/.nextflow/lsp`, the
 newest cached jar (needs Java 17+), Mason's `nextflow-language-server`.
-Override with `lsp.cmd`. The "Preview DAG" code lens writes a Mermaid markdown
-file and runs `:MarkdownPreview` when available.
+Override with `lsp.cmd`. The "Preview DAG" code lens renders a metro map with
+`nf-metro` (interactive HTML in the browser, via |vim.ui.open()|) when it is
+installed and `dag.renderer = "metro"`; otherwise, or when nf-metro fails, it
+writes a Mermaid markdown file and runs `:MarkdownPreview` when available.
+Install nf-metro with `uv tool install nf-metro --with "drawsvg<2.5"`
+(drawsvg 2.5.0 breaks its import).
 
 Params files (`params*.yml`, `params*.yaml`, `params*.json`) in a project
 with `nextflow_schema.json` are validated by yamlls / jsonls: the schema is
@@ -47,7 +51,7 @@ settings. Your files are never modified.
 - `nextflow` (`lint` needs 25.04 or later); optional `nf-test`, `nf-core`
 - the Nextflow language server
 - the `groovy` treesitter parser (`:TSInstall groovy`)
-- optional: yamlls / jsonls, markdown-preview.nvim
+- optional: yamlls / jsonls, nf-metro, markdown-preview.nvim
 
 ==============================================================================
 3. SETUP                                                      *nextflow-setup*
@@ -77,6 +81,7 @@ Otherwise: >lua
 :Nextflow dag                 Run the code lens of the workflow/process around
                               the cursor (Preview DAG / Preview config); outside
                               of one, pick from all lenses.
+:Nextflow dag mermaid         Same, but draw the DAG with Mermaid this once.
 :Nextflow log                 `nextflow log` in a terminal.
 :Nextflow tasks [{run}]       Task explorer, failed tasks first; then pick a
                               file of the task's work directory.
@@ -137,7 +142,12 @@ Defaults: >lua
       nextflow = { cmd = "nextflow" },
       nf_test = { cmd = "nf-test" },
       nf_core = { cmd = "nf-core", cache_ttl = 86400 },
-      dag = { open_preview = true },
+      dag = {
+        open_preview = true,  -- browser / :MarkdownPreview
+        renderer = "metro",   -- "metro" | "mermaid"
+        metro = { cmd = "nf-metro", theme = "nfcore",
+                  format = "html" },  -- html | svg
+      },
     }
 <
 Commands may start with `~`, e.g. `nf_core = { cmd = "~/venv/bin/nf-core" }`.
@@ -149,6 +159,6 @@ A string is split on spaces; for a path containing spaces use a list:
 
 `:checkhealth nextflow` reports the Neovim version, the resolved language
 server command (and Java for the jar), `nextflow`, `nf-test` and `nf-core`
-versions, the groovy parser and markdown-preview.
+versions, the groovy parser, nf-metro and markdown-preview.
 
  vim:tw=78:ts=8:ft=help:norl:

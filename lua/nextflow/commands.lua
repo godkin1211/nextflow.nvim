@@ -23,7 +23,14 @@ M.register("lint", { run = function() require("nextflow.lint").lint(buf()) end }
 M.register("format", {
   run = function() vim.lsp.buf.format({ bufnr = buf(), name = "nextflow_ls" }) end,
 })
-M.register("dag", { run = function() require("nextflow.lsp").run_lens(buf()) end })
+M.register("dag", {
+  run = function(args)
+    local lsp = require("nextflow.lsp")
+    lsp.renderer_override = args[1] == "mermaid" and "mermaid" or nil
+    lsp.run_lens(buf())
+  end,
+  complete = function() return { "mermaid" } end,
+})
 M.register("log", {
   run = function()
     local dir = util.launch_dir(buf()) or util.root(buf())

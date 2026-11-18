@@ -100,6 +100,31 @@ function M.parser_installed(lang)
   return ok and loaded == true
 end
 
+local METRO_INSTALL = 'uv tool install nf-metro --with "drawsvg<2.5"'
+
+---How DAG previews will be drawn.
+---@return "ok"|"info"|"error" level, string message
+function M.metro_status()
+  local dag = config.get().dag
+  if dag.renderer ~= "metro" then
+    return "info", "dag.renderer = " .. tostring(dag.renderer) .. ": DAG previews use Mermaid"
+  end
+  local cmd = util.expand_cmd(dag.metro.cmd)
+  if vim.fn.executable(cmd[1]) ~= 1 then
+    return "info", ("nf-metro not found (`%s`); DAG previews use Mermaid. Install: %s"):format(
+      table.concat(cmd, " "),
+      METRO_INSTALL
+    )
+  end
+  local res = vim.system(vim.list_extend(cmd, { "--version" }), { text = true }):wait(30000)
+  local out = (res.stdout or "") .. (res.stderr or "")
+  if res.code ~= 0 then
+    local hint = require("nextflow.metro").diagnose(out)
+    return "error", "nf-metro does not start: " .. (hint or vim.trim(out):match("[^\n]*$") or "")
+  end
+  return "ok", ("nf-metro %s (DAG previews are metro maps)"):format(out:match("version%s+([%d%.]+)") or "found")
+end
+
 local function check_extras()
   h.start("Optional")
   if M.parser_installed("groovy") then
@@ -107,6 +132,8 @@ local function check_extras()
   else
     h.warn("groovy treesitter parser not installed", { ":TSInstall groovy" })
   end
+  local level, msg = M.metro_status()
+  h[level](msg)
   if vim.fn.exists(":MarkdownPreview") == 2 then
     h.ok(":MarkdownPreview available (DAG preview opens in the browser)")
   else

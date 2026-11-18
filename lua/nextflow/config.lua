@@ -37,7 +37,11 @@ M.defaults = {
   nextflow = { cmd = "nextflow" },
   nf_test = { cmd = "nf-test" },
   nf_core = { cmd = "nf-core", cache_ttl = 86400 },
-  dag = { open_preview = true },
+  dag = {
+    open_preview = true, -- open the metro map in the browser / run :MarkdownPreview
+    renderer = "metro", -- "metro" (nf-metro, falls back to mermaid) | "mermaid"
+    metro = { cmd = "nf-metro", theme = "nfcore", format = "html" }, -- format: html | svg
+  },
 }
 
 local current

@@ -90,6 +90,23 @@ local function exec_server(client, command, args, cb, on_error)
   end)
 end
 
+---Write the DAG as a Mermaid markdown file, open it and :MarkdownPreview it.
+---@param name? string
+---@param mermaid string
+function M.show_mermaid(name, mermaid)
+  local file = M.dag_file(name)
+  vim.fn.mkdir(vim.fs.dirname(file), "p")
+  vim.fn.writefile(M.dag_markdown(name, mermaid), file)
+  vim.cmd("vsplit " .. vim.fn.fnameescape(file))
+  if config.get().dag.open_preview and vim.fn.exists(":MarkdownPreview") == 2 then
+    vim.cmd("MarkdownPreview")
+  end
+end
+
+---Renderer for the next "Preview DAG" only (`:Nextflow dag mermaid`).
+---@type "mermaid"|nil
+M.renderer_override = nil
+
 -- Client-side commands the server's code lenses invoke (same names as in VS Code).
 M.commands = {
   ["nextflow.previewDag"] = function(command, ctx)
@@ -98,14 +115,28 @@ M.commands = {
     if name == vim.NIL then -- JSON null (entry workflow) arrives as userdata
       name = nil
     end
+    local renderer = M.renderer_override
+    M.renderer_override = nil
     exec_server(client, "nextflow.server.previewDag", { uri, name or vim.NIL }, function(mermaid)
-      local file = M.dag_file(name)
-      vim.fn.mkdir(vim.fs.dirname(file), "p")
-      vim.fn.writefile(M.dag_markdown(name, mermaid), file)
-      vim.cmd("vsplit " .. vim.fn.fnameescape(file))
-      if config.get().dag.open_preview and vim.fn.exists(":MarkdownPreview") == 2 then
-        vim.cmd("MarkdownPreview")
+      local metro = require("nextflow.metro")
+      if renderer ~= "mermaid" and metro.enabled() then
+        local title = name or vim.fs.basename(util.root(vim.uri_to_bufnr(uri)) or "") or "entry"
+        return metro.render(mermaid, name, title, function(ok, res)
+          if ok then
+            if config.get().dag.open_preview then
+              vim.ui.open(res)
+            end
+            return util.notify("Metro map: " .. vim.fn.fnamemodify(res, ":~"))
+          end
+          local hint = metro.diagnose(res)
+          util.notify(
+            "nf-metro failed, showing the Mermaid DAG instead:\n" .. (hint or res:match("[^\n]*$")),
+            vim.log.levels.WARN
+          )
+          M.show_mermaid(name, mermaid)
+        end)
       end
+      M.show_mermaid(name, mermaid)
     end, function(msg)
       if not msg:find("has errors", 1, true) then
         return false

@@ -12,8 +12,9 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
   the block starts with that shebang; `${...}` stays Groovy. Needs those treesitter parsers.
 - **Language server** (`nextflow_ls`), auto-detected: `nextflow-lsp` on PATH →
   newest native bundle in `~/.nextflow/lsp` → newest cached jar (Java 17+) → Mason.
-  Code lenses **Preview DAG** (Mermaid, opened with `:MarkdownPreview` if you have it)
-  and **Preview config** work.
+  Code lenses **Preview DAG** and **Preview config** work. The DAG is drawn as a
+  [nf-metro](https://seqeralabs.github.io/nf-metro/latest/) metro map in the browser when
+  `nf-metro` is installed, else as Mermaid (opened with `:MarkdownPreview` if you have it).
 - **Lint**: `nextflow lint` → quickfix list (async).
 - **Run / re-run** in a terminal split, args prompted (default `-resume`).
 - **Resume picker**: pick any run from `.nextflow/history` and resume *that* session.
@@ -32,7 +33,8 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
 - The Nextflow language server (the VS Code extension downloads it to `~/.nextflow/lsp`,
   or install `nextflow-language-server` with Mason, or set `lsp.cmd`)
 - Treesitter `groovy` parser for highlighting (`:TSInstall groovy`)
-- Optional: yamlls / jsonls for params-file validation, markdown-preview.nvim for DAGs
+- Optional: yamlls / jsonls for params-file validation; for DAGs `nf-metro`
+  (`uv tool install nf-metro --with "drawsvg<2.5"`; drawsvg 2.5.0 breaks it) or markdown-preview.nvim
 
 ## Install (lazy.nvim)
 
@@ -60,7 +62,7 @@ Without lazy.nvim, call `require("nextflow").setup({})`.
 | `resume` | pick a run from `.nextflow/history`, resume its session |
 | `lint` | `nextflow lint` → quickfix |
 | `format` | format with the language server |
-| `dag` | run the code lens of the workflow/process around the cursor (Preview DAG / config) |
+| `dag [mermaid]` | run the code lens of the workflow/process around the cursor (Preview DAG / config); `mermaid` skips nf-metro once |
 | `log` | `nextflow log` in a terminal |
 | `tasks [run]` | task explorer (default: newest run) |
 | `failed` | open the first failed task's `.command.err` |
@@ -118,7 +120,11 @@ require("nextflow").setup({
   nextflow = { cmd = "nextflow" },
   nf_test = { cmd = "nf-test" },
   nf_core = { cmd = "nf-core", cache_ttl = 86400 }, -- e.g. cmd = "~/venv/bin/nf-core"
-  dag = { open_preview = true },          -- run :MarkdownPreview on DAG files
+  dag = {
+    open_preview = true,                  -- open the metro map in the browser / run :MarkdownPreview
+    renderer = "metro",                   -- "metro" (nf-metro, falls back to Mermaid) | "mermaid"
+    metro = { cmd = "nf-metro", theme = "nfcore", format = "html" }, -- format: html | svg
+  },
 })
 ```
 
@@ -128,7 +134,7 @@ e.g. `nextflow = { cmd = { "~/My Tools/nextflow" } }`.
 ## Health
 
 `:checkhealth nextflow` reports Neovim, the resolved language server (and Java for the jar),
-`nextflow` / `nf-test` / `nf-core` versions, the groovy parser and markdown-preview.
+`nextflow` / `nf-test` / `nf-core` versions, the groovy parser, nf-metro and markdown-preview.
 
 ## Development
 
