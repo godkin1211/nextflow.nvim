@@ -1,0 +1,4 @@
+2026-07-26 12:11:08	2.2s	suspicious_lattes	OK	b51289103b93139a74e2d345c68eec6d	5e1a0b8e-b507-42ba-9fa8-5e3c2729ce20	nextflow run CLI/main.nf --count_threshold 2
+this line is not a history entry
+2026-07-26 12:53:06	2.1s	happy_mccarthy	ERR	b51289103b93139a74e2d345c68eec6d	66820406-49b4-4872-814f-044a096a3f72	nextflow run CLI/main.nf --count_threshold 2 -resume
+2026-10-28 16:00:32	11m 52s	adoring_poitras	OK	3ba99266ac3ad87ca88a6642b5897db525714945	e5e1cd4c-5353-4caf-8bdf-e7ad3e6bc512	nextflow run nf-core/rarevariantburden -r dev -profile test,docker --outdir results
