@@ -54,7 +54,7 @@ settings. Your files are never modified.
 
 lazy.nvim: >lua
     {
-      "<you>/nextflow.nvim",
+      "godkin1211/nextflow.nvim",
       ft = { "nextflow", "groovy" },
       cmd = "Nextflow",
       opts = {},

@@ -38,7 +38,7 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
 
 ```lua
 {
-  "<you>/nextflow.nvim",
+  "godkin1211/nextflow.nvim",
   ft = { "nextflow", "groovy" },
   cmd = "Nextflow",
   opts = {},
