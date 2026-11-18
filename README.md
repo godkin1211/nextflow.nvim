@@ -12,9 +12,10 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
   the block starts with that shebang; `${...}` stays Groovy. Needs those treesitter parsers.
 - **Language server** (`nextflow_ls`), auto-detected: `nextflow-lsp` on PATH →
   newest native bundle in `~/.nextflow/lsp` → newest cached jar (Java 17+) → Mason.
-  Code lenses **Preview DAG** and **Preview config** work. The DAG is drawn as a
-  [nf-metro](https://seqeralabs.github.io/nf-metro/latest/) metro map in the browser when
-  `nf-metro` is installed, else as Mermaid (opened with `:MarkdownPreview` if you have it).
+  Code lenses **Preview DAG** and **Preview config** work.
+- **DAG as a metro map**: `<localleader>d` in a workflow draws its DAG with
+  [nf-metro](https://seqeralabs.github.io/nf-metro/latest/) as an interactive transit-style map
+  in the browser (see [DAG preview](#dag-preview)). Without nf-metro it falls back to Mermaid.
 - **Lint**: `nextflow lint` → quickfix list (async).
 - **Run / re-run** in a terminal split, args prompted (default `-resume`).
 - **Resume picker**: pick any run from `.nextflow/history` and resume *that* session.
@@ -33,8 +34,8 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
 - The Nextflow language server (the VS Code extension downloads it to `~/.nextflow/lsp`,
   or install `nextflow-language-server` with Mason, or set `lsp.cmd`)
 - Treesitter `groovy` parser for highlighting (`:TSInstall groovy`)
-- Optional: yamlls / jsonls for params-file validation; for DAGs `nf-metro`
-  (`uv tool install nf-metro --with "drawsvg<2.5"`; drawsvg 2.5.0 breaks it) or markdown-preview.nvim
+- Optional: yamlls / jsonls for params-file validation; [nf-metro](#dag-preview) for metro-map
+  DAGs (or markdown-preview.nvim for Mermaid DAGs)
 
 ## Install (lazy.nvim)
 
@@ -130,6 +131,33 @@ require("nextflow").setup({
 
 A `cmd` string is split on spaces; for a path containing spaces use a list,
 e.g. `nextflow = { cmd = { "~/My Tools/nextflow" } }`.
+
+## DAG preview
+
+With the cursor in a workflow, `<localleader>d` (`:Nextflow dag`) asks the language server for the
+workflow's DAG and renders it with [nf-metro](https://seqeralabs.github.io/nf-metro/latest/):
+processes become stations, subworkflows become sections, and the map opens as interactive HTML
+in your browser (pan, zoom, click a line to isolate it). The files live in
+`stdpath("cache")/nextflow.nvim/dag/` (`*_metro.html` plus the source `*_metro.mmd`).
+
+Install nf-metro (Python ≥ 3.10) and pin `drawsvg` below 2.5, whose 2.5.0 release fails to import:
+
+```sh
+uv tool install nf-metro --with "drawsvg<2.5"     # → ~/.local/bin/nf-metro, found on PATH
+# or into an existing virtualenv, then point the plugin at it:
+uv pip install --python ~/venv/bin/python nf-metro "drawsvg<2.5"
+```
+
+```lua
+opts = { dag = { metro = { cmd = "~/venv/bin/nf-metro", theme = "nfcore" } } }
+```
+
+Themes: `nfcore`, `seqera`, `light` (and their `-light` / `-dark` variants); `format = "svg"`
+writes an SVG instead of HTML. When nf-metro is missing or fails (for example a workflow without
+processes), the DAG is shown as Mermaid instead; `:Nextflow dag mermaid` does that on purpose, and
+`dag = { renderer = "mermaid" }` makes it permanent. `:checkhealth nextflow` tells which one you get.
+Metro maps are built automatically from the DAG; for publication-quality maps of big pipelines
+nf-metro recommends hand-editing the `.mmd` file.
 
 ## Health
 
