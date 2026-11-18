@@ -23,6 +23,12 @@ Filetypes: `*.nf`, `nextflow.config` and `*.config` files below a
 parser); `*.nf.test` and `nf-test.config` become `groovy`. Detection lives in
 `ftdetect/`, so it works while the plugin is lazy-loaded.
 
+Process bodies after `script:` or `shell:` are highlighted as Bash, or as
+Python / R / Perl when the block starts with such a shebang (`#!/usr/bin/env
+python`); `${...}` interpolations stay Groovy. The query is
+`queries/groovy/injections.scm` (`; extends`), so it also applies to plain
+Groovy files, where a `script:` label before a string is rare.
+
 Language server `nextflow_ls`: the command is found in this order:
 `nextflow-lsp` on PATH, the newest native bundle in `~/.nextflow/lsp`, the
 newest cached jar (needs Java 17+), Mason's `nextflow-language-server`.

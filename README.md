@@ -8,6 +8,8 @@ nf-core module pickers. Pure Lua, no picker dependency (`vim.ui.select`).
 
 - **Filetypes**: `*.nf`, `nextflow.config` and project `*.config` → `nextflow`
   (highlighted with the groovy treesitter parser); `*.nf.test`, `nf-test.config` → `groovy`.
+- **Process bodies** (`script:` / `shell:`) are highlighted as Bash, or Python / R / Perl when
+  the block starts with that shebang; `${...}` stays Groovy. Needs those treesitter parsers.
 - **Language server** (`nextflow_ls`), auto-detected: `nextflow-lsp` on PATH →
   newest native bundle in `~/.nextflow/lsp` → newest cached jar (Java 17+) → Mason.
   Code lenses **Preview DAG** (Mermaid, opened with `:MarkdownPreview` if you have it)
