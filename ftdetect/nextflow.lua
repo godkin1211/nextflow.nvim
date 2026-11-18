@@ -1,0 +1,1 @@
+require("nextflow.filetype").setup()
