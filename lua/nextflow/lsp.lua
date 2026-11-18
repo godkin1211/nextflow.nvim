@@ -55,11 +55,36 @@ function M.dag_file(name)
   return ("%s/nextflow.nvim/dag/%s_dag.md"):format(vim.fn.stdpath("cache"), (name or "entry"):gsub("[^%w_]", "_"))
 end
 
-local function exec_server(client, command, args, cb)
+---Why "Preview DAG" failed: the server refuses while the script has errors.
+---@param diags vim.Diagnostic[] error diagnostics of the script
+---@return string
+function M.dag_error_message(diags)
+  if #diags == 0 then
+    return "The DAG needs an error-free script, but no error is shown here; run :Nextflow lint"
+  end
+  diags = vim.deepcopy(diags)
+  table.sort(diags, function(a, b)
+    return a.lnum < b.lnum
+  end)
+  local lines = { ("The DAG needs an error-free script; fix %d error%s first:"):format(#diags, #diags == 1 and "" or "s") }
+  for i = 1, math.min(3, #diags) do
+    lines[#lines + 1] = ("line %d: %s"):format(diags[i].lnum + 1, (diags[i].message:match("^[^\n]*")))
+  end
+  if #diags > 3 then
+    lines[#lines + 1] = ("… %d more (location list)"):format(#diags - 3)
+  end
+  return table.concat(lines, "\n")
+end
+
+---@param on_error? fun(msg: string): boolean return true when handled
+local function exec_server(client, command, args, cb, on_error)
   client:request("workspace/executeCommand", { command = command, arguments = args }, function(err, res)
     if err or not res or not res.result then
-      local msg = err and err.message or (res and res.error) or "no result"
-      return util.notify(command .. ": " .. tostring(msg), vim.log.levels.ERROR)
+      local msg = tostring(err and err.message or (res and res.error) or "no result")
+      if on_error and on_error(msg) then
+        return
+      end
+      return util.notify(command .. ": " .. msg, vim.log.levels.ERROR)
     end
     cb(res.result)
   end)
@@ -81,6 +106,17 @@ M.commands = {
       if config.get().dag.open_preview and vim.fn.exists(":MarkdownPreview") == 2 then
         vim.cmd("MarkdownPreview")
       end
+    end, function(msg)
+      if not msg:find("has errors", 1, true) then
+        return false
+      end
+      local buf = vim.uri_to_bufnr(uri)
+      local diags = vim.diagnostic.get(buf, { severity = vim.diagnostic.severity.ERROR })
+      util.notify(M.dag_error_message(diags), vim.log.levels.WARN)
+      if #diags > 0 and vim.api.nvim_win_get_buf(0) == buf then
+        vim.diagnostic.setloclist({ severity = vim.diagnostic.severity.ERROR, title = "Errors blocking the DAG" })
+      end
+      return true
     end)
   end,
   ["nextflow.previewConfig"] = function(command, ctx)
