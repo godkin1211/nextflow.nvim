@@ -1,0 +1,146 @@
+*nextflow.txt*  Nextflow support for Neovim
+
+==============================================================================
+CONTENTS                                                   *nextflow-contents*
+
+  1. Introduction ........................... |nextflow-intro|
+  2. Requirements ........................... |nextflow-requirements|
+  3. Setup .................................. |nextflow-setup|
+  4. Commands ............................... |:Nextflow|
+  5. Keymaps ................................ |nextflow-keymaps|
+  6. Configuration .......................... |nextflow-config|
+  7. Health ................................. |nextflow-health|
+
+==============================================================================
+1. INTRODUCTION                                               *nextflow-intro*
+
+Language server, lint, run/resume, a task explorer for failed runs, nf-test,
+`nextflow_schema.json`-aware params and nf-core module pickers. Pickers use
+|vim.ui.select()|.
+
+Filetypes: `*.nf`, `nextflow.config` and `*.config` files below a
+`nextflow.config` become `nextflow` (highlighted with the groovy treesitter
+parser); `*.nf.test` and `nf-test.config` become `groovy`. Detection lives in
+`ftdetect/`, so it works while the plugin is lazy-loaded.
+
+Language server `nextflow_ls`: the command is found in this order:
+`nextflow-lsp` on PATH, the newest native bundle in `~/.nextflow/lsp`, the
+newest cached jar (needs Java 17+), Mason's `nextflow-language-server`.
+Override with `lsp.cmd`. The "Preview DAG" code lens writes a Mermaid markdown
+file and runs `:MarkdownPreview` when available.
+
+Params files (`params*.yml`, `params*.yaml`, `params*.json`) in a project
+with `nextflow_schema.json` are validated by yamlls / jsonls: the schema is
+flattened to draft-07 in the cache directory and pushed to the server's
+settings. Your files are never modified.
+
+==============================================================================
+2. REQUIREMENTS                                        *nextflow-requirements*
+
+- Neovim 0.11 or later
+- `nextflow` (`lint` needs 25.04 or later); optional `nf-test`, `nf-core`
+- the Nextflow language server
+- the `groovy` treesitter parser (`:TSInstall groovy`)
+- optional: yamlls / jsonls, markdown-preview.nvim
+
+==============================================================================
+3. SETUP                                                      *nextflow-setup*
+
+lazy.nvim: >lua
+    {
+      "<you>/nextflow.nvim",
+      ft = { "nextflow", "groovy" },
+      cmd = "Nextflow",
+      opts = {},
+    }
+<
+Otherwise: >lua
+    require("nextflow").setup({})
+<
+
+==============================================================================
+4. COMMANDS                                                        *:Nextflow*
+
+:Nextflow run                 `nextflow run .` in a terminal; args prompted
+                              (default `-resume`).
+:Nextflow rerun               Repeat the last run.
+:Nextflow resume              Pick a run from `.nextflow/history`, edit the
+                              command, resume that session.
+:Nextflow lint                `nextflow lint` into the quickfix list.
+:Nextflow format              Format with the language server.
+:Nextflow dag                 Run the code lens under the cursor.
+:Nextflow log                 `nextflow log` in a terminal.
+:Nextflow tasks [{run}]       Task explorer, failed tasks first; then pick a
+                              file of the task's work directory.
+:Nextflow failed              Open the first failed task's `.command.err`
+                              (or `.command.log`) of the newest run.
+:Nextflow test [{mode}]       nf-test; {mode} is `file` (default),
+                              `nearest` (the `test("…")` under the cursor,
+                              run as `nf-test test <file>@<hash>`), `all`,
+                              `update` (`--update-snapshot`).
+:Nextflow alt                 Jump between `main.nf` and
+                              `tests/main.nf.test`.
+:Nextflow param               Schema docs of `params.<name>` under the cursor.
+:Nextflow modules[!]          Remote nf-core modules (cached for a day; `!`
+                              refreshes): info, install.
+:Nextflow modules local       Installed modules: info, update, remove, open.
+:Nextflow health              |:checkhealth| nextflow.
+
+The `.nextflow/history` used by `resume`, `tasks` and `failed` is the one in
+the current directory, else the nearest one above the current file.
+
+==============================================================================
+5. KEYMAPS                                                  *nextflow-keymaps*
+
+Buffer-local in `nextflow` buffers and `*.nf.test` files:
+
+  <localleader>r  run               <localleader>t  test file
+  <localleader>R  re-run            <localleader>n  test nearest
+  <localleader>s  resume picker     <localleader>T  test all
+  <localleader>l  lint              <localleader>u  update snapshots
+  <localleader>f  format            <localleader>a  alternate file
+  <localleader>d  code lens         <localleader>p  param docs
+  <localleader>e  failed task       <localleader>m  nf-core modules
+  <localleader>k  task explorer
+
+Set `keymaps = false` to disable all of them, or any entry to `false` or
+another key.
+
+==============================================================================
+6. CONFIGURATION                                             *nextflow-config*
+
+Defaults: >lua
+    {
+      lsp = {
+        enable = true,
+        cmd = nil,  -- string[]; nil = auto-detect
+        settings = { nextflow = {
+          languageVersion = "26.10",
+          errorReportingMode = "warnings",
+          completion = { extended = true, maxItems = 100 },
+          formatting = { harshilAlignment = false, maheshForm = false,
+                         sortDeclarations = false },
+          files = { exclude = { ".git", ".lineage", ".nextflow", ".nf-test",
+                                ".pixi", ".venv", "work" } },
+          telemetry = { enabled = false },
+        } },
+      },
+      keymaps = { run = "<localleader>r", ... },  -- see |nextflow-keymaps|
+      terminal = { height = 0.35 },
+      run = { default_args = "-resume" },
+      nextflow = { cmd = "nextflow" },
+      nf_test = { cmd = "nf-test" },
+      nf_core = { cmd = "nf-core", cache_ttl = 86400 },
+      dag = { open_preview = true },
+    }
+<
+Commands may start with `~`, e.g. `nf_core = { cmd = "~/venv/bin/nf-core" }`.
+
+==============================================================================
+7. HEALTH                                                    *nextflow-health*
+
+`:checkhealth nextflow` reports the Neovim version, the resolved language
+server command (and Java for the jar), `nextflow`, `nf-test` and `nf-core`
+versions, the groovy parser and markdown-preview.
+
+ vim:tw=78:ts=8:ft=help:norl:
