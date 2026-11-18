@@ -1,0 +1,15 @@
+nextflow_process {
+    name "Test ECHO_X"
+    script "../main.nf"
+    process "ECHO_X"
+
+    test("first") {
+        when { process { "input[0] = 'a'" } }
+        then { assert process.success }
+    }
+
+    test("second") {
+        when { process { "input[0] = 'b'" } }
+        then { assert process.success }
+    }
+}

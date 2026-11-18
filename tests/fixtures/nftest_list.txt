@@ -1,0 +1,8 @@
+
+[tests/main.nf.test] [1mTest ECHO_X[0m
+
+  [tests/main.nf.test@3b6f5e0d] [1mfirst[0m
+  [tests/main.nf.test@93d49ea1] [1msecond[0m
+
+Found 2 tests.
+
