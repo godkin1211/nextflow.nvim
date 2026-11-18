@@ -6,6 +6,7 @@ function M.setup(opts)
   require("nextflow.config").setup(opts)
   require("nextflow.filetype").setup()
   require("nextflow.lsp").setup()
+  require("nextflow.keymaps").setup()
 end
 
 return M
